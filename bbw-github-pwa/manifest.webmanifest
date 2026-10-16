@@ -1,0 +1,11 @@
+{
+  "name": "Binance BBW 掃描器",
+  "short_name": "BBW 掃描器",
+  "description": "免費的 Binance USDT 永續合約布林帶突破與收縮掃描器",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BBW 掃描器">
+  <title>Binance BBW 掃描器</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <style>
+    :root{color-scheme:dark;--bg:#0b1220;--panel:#121c2d;--panel2:#17243a;--line:#263750;--text:#edf4ff;--muted:#9aacc5;--green:#53d6a0;--red:#ff7d86;--gold:#f4ca76;--blue:#83b7ff}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#0b1220,#101a2c 55%,#0b1220);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 14px calc(24px + env(safe-area-inset-bottom))}
+    .wrap{max-width:900px;margin:auto}.top{padding:20px 2px 14px}.eyebrow{font-size:11px;letter-spacing:1.5px;color:var(--blue);font-weight:800}.title{font-size:25px;font-weight:850;margin:4px 0}.subtitle{color:var(--muted);font-size:12px}
+    .status{margin:8px 0 14px;padding:13px;border:1px solid var(--line);border-radius:16px;background:#111b2b}.statusline{display:flex;justify-content:space-between;gap:10px;align-items:center}.pill{font-size:11px;padding:4px 8px;border-radius:99px;background:#1b3341;color:var(--green);white-space:nowrap}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.stat{background:var(--panel2);border-radius:11px;padding:10px}.stat b{display:block;font-size:21px}.stat span{font-size:11px;color:var(--muted)}
+    .tabs{display:flex;gap:8px;margin:14px 0 10px}.tab{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:12px;padding:11px 4px;font-weight:750}.tab.active{background:#203c5c;border-color:#4b83ba;color:#fff}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 2px;font-size:12px;color:var(--muted)}button{cursor:pointer}.refresh{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:7px 10px}
+    .notice{font-size:12px;color:var(--muted);padding:10px 12px;background:#111b2b;border-radius:12px;margin:10px 0 14px}.list{display:grid;gap:9px}.card{border:1px solid var(--line);border-radius:15px;background:rgba(18,28,45,.95);padding:13px}.cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.symbol{font-size:17px;font-weight:850;letter-spacing:.2px}.tag{border-radius:7px;padding:3px 7px;font-size:11px;font-weight:800;background:#273a52;color:var(--blue);white-space:nowrap}.tag.hot{background:#49351f;color:var(--gold)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.metric{background:#0e1726;border-radius:9px;padding:8px}.metric span{display:block;color:var(--muted);font-size:10px}.metric b{font-size:14px;overflow-wrap:anywhere}.positive{color:var(--green)}.negative{color:var(--red)}.empty{padding:35px 14px;text-align:center;border:1px dashed var(--line);border-radius:15px;color:var(--muted)}.historyrow{padding:13px;border:1px solid var(--line);border-radius:13px;background:var(--panel);margin-bottom:8px}.historyrow strong{font-size:13px}.historycounts{display:flex;gap:14px;color:var(--muted);font-size:12px;margin-top:7px}.foot{font-size:11px;line-height:1.6;color:#7f91aa;margin:20px 2px}.hidden{display:none!important}
+    @media(min-width:650px){.list{grid-template-columns:repeat(2,minmax(0,1fr))}.top{padding-top:28px}.title{font-size:30px}}
+  </style>
+</head>
+<body><main class="wrap">
+  <header class="top"><div class="eyebrow">MARKET SCANNER · FREE PWA</div><div class="title">Binance BBW 掃描器</div><div class="subtitle">布林帶突破 / 收縮監測 · 每 4 小時自動掃描</div></header>
+  <section class="status"><div class="statusline"><div><strong id="updateText">正在讀取掃描資料…</strong><div class="subtitle" id="marketText">Binance USD-M USDT 永續合約</div></div><span class="pill" id="statePill">讀取中</span></div><div class="stats"><div class="stat"><b id="scanCount">—</b><span>掃描交易對</span></div><div class="stat"><b id="breakCount">—</b><span>突破訊號</span></div><div class="stat"><b id="squeezeCount">—</b><span>收縮訊號</span></div></div></section>
+  <nav class="tabs"><button class="tab active" data-tab="breakout">🚀 突破榜</button><button class="tab" data-tab="squeeze">🌀 收縮榜</button><button class="tab" data-tab="history">🕘 歷史紀錄</button></nav>
+  <div class="toolbar"><span id="listLabel">按偏離上軌幅度由高至低</span><button class="refresh" id="refreshBtn">↻ 更新資料</button></div>
+  <div class="notice" id="ruleNotice">突破：BBW ≥ 50%、現價高於上軌、日線 EMA200 高於 MA200 至少 2%。</div>
+  <section id="results" class="list"><div class="empty">正在載入資料…</div></section>
+  <section id="history" class="hidden"></section>
+  <footer class="foot">掃描資料由 GitHub Actions 定時更新，並非即時推播。指標使用已收盤 K 線，價格使用掃描當下的 Binance 最新價格。這是條件篩選工具，不代表買賣建議；空白結果表示本次沒有符合條件的標的，或首次掃描尚未完成。</footer>
+</main>
+<script>
+(() => {
+  let latest = null, historyData = {runs:[]}, currentTab = 'breakout';
+  const $ = id => document.getElementById(id);
+  const fmt = (n, digits=2) => Number.isFinite(Number(n)) ? Number(n).toLocaleString('en-US',{maximumFractionDigits:digits,minimumFractionDigits:0}) : '—';
+  const fmtPrice = n => Number.isFinite(Number(n)) ? Number(n).toLocaleString('en-US',{maximumFractionDigits:Number(n)<1?8:4}) : '—';
+  const fmtTime = t => { if(!t) return '尚未完成首次掃描'; return new Date(t).toLocaleString('zh-TW',{hour12:false}); };
+  async function loadData() {
+    $('statePill').textContent = '更新中';
+    try {
+      const stamp = Date.now();
+      const [a,b] = await Promise.all([
+        fetch(`./data/latest.json?v=${stamp}`,{cache:'no-store'}),
+        fetch(`./data/history.json?v=${stamp}`,{cache:'no-store'})
+      ]);
+      if(!a.ok) throw new Error('latest.json 尚未部署');
+      latest = await a.json();
+      if(b.ok) historyData = await b.json();
+      render();
+      $('statePill').textContent = latest.timestamp ? '資料已載入' : '等待首次掃描';
+    } catch(e) {
+      $('statePill').textContent = '讀取失敗';
+      $('updateText').textContent = '無法讀取掃描資料';
+      $('results').innerHTML = `<div class="empty">目前無法讀取資料。若剛部署，請到 GitHub 的 Actions 頁面確認首次掃描是否完成。<br><br>${String(e.message||e)}</div>`;
+    }
+  }
+  function card(row, type) {
+    const breakout = type === 'breakout';
+    const main = breakout ? `${fmt(row.deviation,3)}%` : `${fmt(row.bbw,3)}%`;
+    const tag = breakout ? '高於上軌' : '帶寬收縮';
+    return `<article class="card"><div class="cardhead"><div><div class="symbol">${row.symbol}</div><div class="subtitle">現價 ${fmtPrice(row.price)} USDT</div></div><span class="tag ${breakout?'hot':''}">${row.hours}h · ${tag}</span></div><div class="metrics"><div class="metric"><span>${breakout?'偏離上軌':'布林帶寬'}</span><b class="${breakout?'positive':''}">${main}</b></div><div class="metric"><span>BBW</span><b>${fmt(row.bbw,3)}%</b></div><div class="metric"><span>${breakout?'日線 EMA/MA 差距':'連續命中天數'}</span><b>${breakout?`${fmt(row.dailySpread,2)}%`:`${row.streakDays||1} 天`}</b></div></div></article>`;
+  }
+  function renderHistory() {
+    const runs = historyData.runs || [];
+    if(!runs.length) { $('history').innerHTML = '<div class="empty">目前還沒有歷史掃描紀錄。完成第一次掃描後，這裡會保留最近 30 次結果。</div>'; return; }
+    $('history').innerHTML = runs.map(r => `<div class="historyrow"><strong>${fmtTime(r.timestamp)}</strong><div class="subtitle">成功掃描 ${r.successfulSymbols??'—'} / ${r.scannedSymbols??'—'} 個交易對 · 失敗 ${r.failedSymbols??0}</div><div class="historycounts"><span>🚀 突破 ${Array.isArray(r.breakout)?r.breakout.length:0}</span><span>🌀 收縮 ${Array.isArray(r.squeeze)?r.squeeze.length:0}</span></div></div>`).join('');
+  }
+  function render() {
+    $('updateText').textContent = `最後掃描：${fmtTime(latest.timestamp)}`;
+    $('marketText').textContent = `USDT 永續合約 · 成功 ${latest.successfulSymbols??0}/${latest.scannedSymbols??0} · 失敗 ${latest.failedSymbols??0}`;
+    $('scanCount').textContent = fmt(latest.successfulSymbols??0,0);
+    $('breakCount').textContent = fmt((latest.breakout||[]).length,0);
+    $('squeezeCount').textContent = fmt((latest.squeeze||[]).length,0);
+    renderHistory();
+    const isHistory = currentTab === 'history';
+    $('history').classList.toggle('hidden',!isHistory);
+    $('results').classList.toggle('hidden',isHistory);
+    $('ruleNotice').classList.toggle('hidden',isHistory);
+    $('listLabel').textContent = currentTab==='breakout'?'按偏離上軌幅度由高至低':currentTab==='squeeze'?'按布林帶寬由低至高':'最近 30 次掃描快照';
+    $('ruleNotice').textContent = currentTab==='breakout'?'突破條件：BBW ≥ 50%、現價高於上軌、日線 EMA200 高於 MA200 至少 2%；週期 1–20h。': '收縮條件：BBW ≤ 2%；週期 1–5h 與 16–20h。越小代表帶寬越窄。';
+    if(isHistory) return;
+    const rows = currentTab==='breakout'?(latest.breakout||[]):(latest.squeeze||[]);
+    $('results').innerHTML = rows.length ? rows.map(r=>card(r,currentTab)).join('') : `<div class="empty">本次掃描沒有符合「${currentTab==='breakout'?'突破':'收縮'}」條件的結果。<br><br>這不代表資料錯誤；可以查看歷史紀錄或等待下一次掃描。</div>`;
+  }
+  document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+    currentTab=btn.dataset.tab; document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===btn)); render();
+  }));
+  $('refreshBtn').addEventListener('click',loadData);
+  if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  loadData();
+})();
+</script>
+</body></html>
