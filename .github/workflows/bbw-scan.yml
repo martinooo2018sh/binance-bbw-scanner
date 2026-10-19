@@ -1,0 +1,82 @@
+name: Binance BBW Scanner
+
+on:
+  schedule:
+    - cron: "0 */4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bbw-scanner
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Get project files
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run Binance BBW scan
+        working-directory: bbw-github-pwa
+        run: node scripts/scan.mjs
+
+      - name: Publish scan data and save archive
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SOURCE="bbw-github-pwa/site/data"
+          PUBLIC="bbw-github-pwa/data"
+
+          test -s "$SOURCE/latest.json"
+          test -s "$SOURCE/history.json"
+
+          mkdir -p "$PUBLIC/archive"
+
+          cp "$SOURCE/latest.json" "$PUBLIC/latest.json"
+          cp "$SOURCE/history.json" "$PUBLIC/history.json"
+
+          NOW="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
+          MONTH="$(date -u +'%Y/%m')"
+
+          mkdir -p "$PUBLIC/archive/$MONTH"
+
+          cp "$SOURCE/latest.json" \
+            "$PUBLIC/archive/$MONTH/$NOW.json"
+
+          cat > "$PUBLIC/status.json" <<EOF
+          {
+            "status": "success",
+            "publishedAt": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')",
+            "archiveFile": "archive/$MONTH/$NOW.json"
+          }
+          EOF
+
+      - name: Save results to GitHub
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add bbw-github-pwa/data
+
+          if git diff --cached --quiet; then
+            echo "No data changes to commit."
+          else
+            git commit -m "data: update Binance BBW scan"
+            git push origin HEAD:main
+          fi
